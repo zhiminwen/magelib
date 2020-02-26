@@ -9,9 +9,6 @@ import (
 
 	"github.com/zhiminwen/magetool/shellkit"
 	"github.com/zhiminwen/quote"
-
-	// mage:import man
-	_ "github.com/zhiminwen/magelib/man"
 )
 
 type CFSSLTool struct {
