@@ -57,7 +57,7 @@ func getRepo(imgData []ImageData) map[string]Repo {
 }
 
 func GenOCPImagePolicyYaml(imgData []ImageData, name string, localRegUrl string) string {
-	repoList := getRepo()
+	repoList := getRepo(imgData)
 	content := quote.TemplateGeneric(quote.HereDoc(`
     apiVersion: operator.openshift.io/v1alpha1
     kind: ImageContentSourcePolicy
