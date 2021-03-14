@@ -56,6 +56,7 @@ func getRepo(imgData []ImageData) map[string]Repo {
 	return repoList
 }
 
+//create ocp ImageContentSourcePolicy for airgap images
 func GenOCPImagePolicyYaml(imgData []ImageData, name string, localRegUrl string) string {
 	repoList := getRepo(imgData)
 	content := quote.TemplateGeneric(quote.HereDoc(`
