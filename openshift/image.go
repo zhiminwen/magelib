@@ -1,4 +1,4 @@
-package openshift
+package github.com/zhiminwen/magelib/openshift
 
 import (
 	"fmt"
