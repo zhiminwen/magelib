@@ -72,6 +72,7 @@ func GenOCPImagePolicyYaml(imgData []ImageData, name string, localRegUrl string)
         source: {{ $key }}
       {{ end }}
   `), map[string]interface{}{
+		"name":        name,
 		"mirrors":     repoList,
 		"localRegUrl": localRegUrl,
 	})
