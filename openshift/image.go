@@ -27,7 +27,14 @@ func CreateImgData(lists []string) []ImageData {
 		data := strings.SplitN(line, "/", 2)
 		reg := data[0]
 		repoTags := strings.Split(data[1], ":")
-		repo, tag := repoTags[0], repoTags[1]
+
+		var repo, tag string
+		if len(repoTags) > 1 {
+			repo, tag = repoTags[0], repoTags[1]
+		} else {
+			repo = repoTags[0]
+			tag = "" //latest
+		}
 
 		result = append(result, ImageData{
 			Reg:  reg,
