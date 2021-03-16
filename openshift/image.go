@@ -33,7 +33,7 @@ func CreateImgData(lists []string) []ImageData {
 			repo, tag = repoTags[0], repoTags[1]
 		} else {
 			repo = repoTags[0]
-			tag = "" //latest
+			tag = "latest" //latest
 		}
 
 		result = append(result, ImageData{
