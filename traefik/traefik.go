@@ -30,11 +30,10 @@ func ConstructHTTPSRoutersToml(hosts []string, uniqName string, lbAddress string
 		[[tcp.services.service-{{ .uniqName }}.loadBalancer.servers]]
 			address = "{{ .lbAddress }}"
 	`), map[string]string{
-		"quote":    "`",
-		"cluster":  conf.Cluster,
-		"domain":   conf.Domain,
-		"lbIp":     conf.LoadBalancerIp,
-		"hostList": strings.Join(domainList, ","),
+		"quote":     "`",
+		"uniqName":  uniqName,
+		"lbAddress": lbAddress,
+		"hostList":  strings.Join(domainList, ","),
 	})
-	master.Put(content, "/etc/traefik/conf.d/"+conf.Cluster+".toml")
+	return content
 }
