@@ -21,6 +21,8 @@ type VMSpec struct {
 	Pool     string
 	PoolPath string
 	Network  string
+
+	IsoFile string
 }
 
 func fill_default(vm VMSpec) VMSpec {
@@ -56,9 +58,14 @@ func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 }
 
 func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
+	if vm.IsoFile != "" {
+		cdOption = "--disk device=cdrom"
+	} else {
+		cdOption = "--cdrom " + vm.IsoFile
+	}
 	cmd := quote.CmdTemplate(`
 		virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
-		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio --pxe --noautoconsole --graphics=vnc --hvm --network network={{ .network }},model=virtio --boot hd,network --disk device=cdrom
+		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio --pxe --noautoconsole --graphics=vnc --hvm --network network={{ .network }},model=virtio {{ .cdOption}}
 	`, map[string]string{
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
@@ -67,6 +74,7 @@ func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		"pool":     vm.Pool,
 		"path":     vm.PoolPath,
 		"network":  vm.Network,
+		"cdOption": cdOption,
 	})
 
 	return sshClient.Execute(cmd)
