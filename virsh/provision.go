@@ -58,7 +58,7 @@ func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	cmd := quote.CmdTemplate(`
 		virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
-		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio --pxe --noautoconsole --graphics=vnc --hvm --network network={{ .network }},model=virtio --boot hd,network
+		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio --pxe --noautoconsole --graphics=vnc --hvm --network network={{ .network }},model=virtio --boot hd,network --cdrom
 	`, map[string]string{
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
