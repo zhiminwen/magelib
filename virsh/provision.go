@@ -59,7 +59,7 @@ func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 
 func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	var cdOption string
-	if vm.IsoFile != "" {
+	if vm.IsoFile == "" {
 		cdOption = "--disk device=cdrom"
 	} else {
 		cdOption = "--cdrom " + vm.IsoFile
