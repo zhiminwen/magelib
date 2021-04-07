@@ -43,7 +43,7 @@ func fill_default(vm VMSpec) VMSpec {
 func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	vm = fill_default(vm)
 	cmd := quote.CmdTemplate(`
-		uvt-kvm create {{ .vmName }} release={{ .release }} --memory {{ .mem }} --cpu {{ .cpu }} --disk {{ .diskSize }} --bridge {{ .br }} --password password
+    uvt-kvm create {{ .vmName }} release={{ .release }} --memory {{ .mem }} --cpu {{ .cpu }} --disk {{ .diskSize }} --bridge {{ .br }} --password password
 `, map[string]string{
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
@@ -63,6 +63,37 @@ func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	return sshClient.Execute(cmd)
 }
 
+func UVT_static_ip_script(nicName, staticIp, gateway string, dns []string) string {
+	content := quote.Template(quote.HereDoc(`
+    #! /bin/sh
+
+    cat<<EOT>/etc/netplan/50-cloud-init.yaml
+    network:
+      ethernets:
+          {{ .nicName }}:
+            addresses:
+            - {{ .staticIp }}
+            gateway4: {{ .gateway }}
+            nameservers:
+              addresses:
+              {{- range $i, $n := .dns }}
+              - {{ $n }}
+              {{- end }}
+      version: 2
+    EOT
+    
+    netplan apply
+    
+  `), map[string]interface{}{
+		"nicName":  nicName,
+		"staticIp": staticIp,
+		"gateway":  gateway,
+		"dns":      dns,
+	})
+
+	return content
+}
+
 func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	var cdOption string
 	if vm.IsoFile == "" {
@@ -71,9 +102,9 @@ func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		cdOption = "--cdrom " + vm.IsoFile
 	}
 	cmd := quote.CmdTemplate(`
-		virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
-		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio --pxe --noautoconsole --graphics=vnc --hvm --network network={{ .network }},model=virtio {{ .cdOption}}
-	`, map[string]string{
+    virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio --pxe --noautoconsole --graphics=vnc --hvm --network network={{ .network }},model=virtio {{ .cdOption}}
+  `, map[string]string{
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
 		"cpu":      fmt.Sprintf("%d", vm.Cpu),
@@ -89,8 +120,8 @@ func By_virt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 
 func Remove_uvt_vm(sshClient *sshkit.SSHClient, vmName string) error {
 	cmd := quote.CmdTemplate(`
-		uvt-kvm destroy {{ .vmName }} 
-	`, map[string]string{
+    uvt-kvm destroy {{ .vmName }} 
+  `, map[string]string{
 		"vmName": vmName,
 	})
 
@@ -99,12 +130,12 @@ func Remove_uvt_vm(sshClient *sshkit.SSHClient, vmName string) error {
 
 func Remove_kvm_vm(sshClient *sshkit.SSHClient, vmName string, pool, poolPath string) error {
 	cmd := quote.CmdTemplate(`
-			virsh destroy {{ .vmName }} || echo already down
-			virsh undefine {{ .vmName }}
+      virsh destroy {{ .vmName }} || echo already down
+      virsh undefine {{ .vmName }}
 
-			rm -rf {{.path }}/{{ .vmName }}.qcow2
-			virsh pool-refresh {{ .pool }}
-		`, map[string]string{
+      rm -rf {{.path }}/{{ .vmName }}.qcow2
+      virsh pool-refresh {{ .pool }}
+    `, map[string]string{
 		"vmName": vmName,
 		"pool":   pool,
 		"path":   poolPath,
@@ -130,8 +161,8 @@ func Capture_mac(sshClient *sshkit.SSHClient, name string) (string, error) {
 
 func Find_dhcp_ip(sshClient *sshkit.SSHClient, mac string) (string, error) {
 	cmd := quote.CmdTemplate(`
-		//? (192.168.10.47) at 52:54:00:11:a3:96 [ether] on br-ocp
-		arp -an | grep {{ .mac }} | cut -d \( -f 2 | cut -d \) -f 1 
+    //? (192.168.10.47) at 52:54:00:11:a3:96 [ether] on br-ocp
+    arp -an | grep {{ .mac }} | cut -d \( -f 2 | cut -d \) -f 1 
 `, map[string]string{
 		"mac": mac,
 	})
