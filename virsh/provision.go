@@ -23,6 +23,8 @@ type VMSpec struct {
 	Network  string
 
 	IsoFile string
+
+	ScriptPath string //for UVT run-once script
 }
 
 func fill_default(vm VMSpec) VMSpec {
@@ -51,6 +53,10 @@ func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		"release":  vm.Release, // "focal", //ubuntu 20.04
 		"password": vm.Password,
 	})
+
+	if vm.ScriptPath != "" {
+		cmd = fmt.Sprintf("%s --run-script-once %s", cmd, vm.ScriptPath)
+	}
 
 	log.Printf("cmd=%s", cmd)
 
