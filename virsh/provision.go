@@ -64,7 +64,7 @@ func By_uvt(sshClient *sshkit.SSHClient, vm VMSpec) error {
 }
 
 func UVT_static_ip_script(nicName, staticIp, gateway string, dns []string) string {
-	content := quote.Template(quote.HereDoc(`
+	content := quote.TemplateGeneric(quote.HereDoc(`
     #! /bin/sh
 
     cat<<EOT>/etc/netplan/50-cloud-init.yaml
