@@ -41,7 +41,7 @@ func CreateImgData(lists []string) []ImageData {
 		repoDir := filepath.Dir(repo)
 		if repoDir == "." {
 			// repoDir = "library" //docker.io => docker.io/library
-			repo = "/library/" + repo
+			repo = "library/" + repo
 		}
 
 		result = append(result, ImageData{
