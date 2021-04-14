@@ -22,6 +22,8 @@ func CreateImgData(lists []string) []ImageData {
 	// 		Reg: docker.io
 	// 		Repo: /ceph/ceph
 	// 		tag: v15.2.4
+	// docker.io/golang
+	//    Repo: /libraru
 	result := []ImageData{}
 	for _, line := range lists {
 		data := strings.SplitN(line, "/", 2)
@@ -34,6 +36,12 @@ func CreateImgData(lists []string) []ImageData {
 		} else {
 			repo = repoTags[0]
 			tag = "latest" //latest
+		}
+
+		repoDir := filepath.Dir(repo)
+		if repoDir == "." {
+			// repoDir = "library" //docker.io => docker.io/library
+			repo = "/library/" + repo
 		}
 
 		result = append(result, ImageData{
