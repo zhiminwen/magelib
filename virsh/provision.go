@@ -86,7 +86,7 @@ func UVT_static_ip_script(nicName, staticIp, gateway string, dns []string) strin
     
   `), map[string]interface{}{
 		"nicName":  nicName,
-		"staticIp": staticIp,
+		"staticIp": staticIp, //must have prefix such as /24
 		"gateway":  gateway,
 		"dns":      dns,
 	})

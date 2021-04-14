@@ -54,10 +54,15 @@ type Repo struct {
 func getRepo(imgData []ImageData) map[string]Repo {
 	repoList := map[string]Repo{}
 	for _, img := range imgData {
+		repoDir := filepath.Dir(img.Repo)
 		key := fmt.Sprintf("%s/%s", img.Reg, filepath.Dir(img.Repo))
+		if repoDir == "." {
+			repoDir = ""
+			key = img.Reg
+		}
 		repoList[key] = Repo{
 			Registry: img.Reg,
-			Repo:     filepath.Dir(img.Repo),
+			Repo:     repoDir,
 		}
 	}
 	return repoList
