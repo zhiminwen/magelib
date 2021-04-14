@@ -57,8 +57,8 @@ func getRepo(imgData []ImageData) map[string]Repo {
 		repoDir := filepath.Dir(img.Repo)
 		key := fmt.Sprintf("%s/%s", img.Reg, filepath.Dir(img.Repo))
 		if repoDir == "." {
-			repoDir = ""
-			key = img.Reg
+			repoDir = "library" //docker.io => docker.io/library
+			key = fmt.Sprintf("%s/library", img.Reg)
 		}
 		repoList[key] = Repo{
 			Registry: img.Reg,
