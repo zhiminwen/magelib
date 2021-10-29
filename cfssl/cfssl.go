@@ -87,7 +87,7 @@ func (cfssltool *CFSSLTool) CreateSelfSignedCA(cn string, listOfHosts []string) 
 	}
 	content := quote.Template(doc, map[string]string{
 		"cn":          cn,
-		"keySize":     "2048",
+		"keySize":     "4096",
 		"listOfHosts": strings.Join(list, ","),
 	})
 
@@ -120,7 +120,7 @@ func (cfssltool *CFSSLTool) CreateClientCert(cn string, listOfHosts []string, ce
 	}
 	content := quote.Template(doc, map[string]string{
 		"cn":          cn,
-		"keySize":     "2048",
+		"keySize":     "4096",
 		"listOfHosts": strings.Join(list, ","),
 	})
 
@@ -157,7 +157,7 @@ func (cfssltool *CFSSLTool) CreateServerCert(cn string, listOfHosts []string, ce
 	}
 	content := quote.Template(doc, map[string]string{
 		"cn":          cn,
-		"keySize":     "2048",
+		"keySize":     "4096",
 		"listOfHosts": strings.Join(list, ","),
 	})
 
