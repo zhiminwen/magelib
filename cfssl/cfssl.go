@@ -102,76 +102,50 @@ func (cfssltool *CFSSLTool) CreateSelfSignedCA(cn string, listOfHosts []string) 
 	shellkit.ExecuteShell(cmd)
 }
 
+//keysize default to 4096
 func (cfssltool *CFSSLTool) CreateClientCert(cn string, listOfHosts []string, certName string) {
-	doc := quote.HereDoc(`
-      {
-         "CN": "{{ .cn }}",
-         "hosts": [ {{ .listOfHosts }} ],
-         "key": {
-            "algo": "rsa",
-            "size": {{ .keySize }}
-         }
-      }
-    `)
-
-	list := []string{}
-	for _, host := range listOfHosts {
-		list = append(list, fmt.Sprintf(`"%s"`, host))
-	}
-	content := quote.Template(doc, map[string]string{
-		"cn":          cn,
-		"keySize":     "4096",
-		"listOfHosts": strings.Join(list, ","),
-	})
-
-	ioutil.WriteFile(cfssltool.WorkingDir+"/clientRequest.json", []byte(content), 0644)
-	cmd := quote.CmdTemplate(`
-    // set PATH=%PATH%;c:\Tools\cfssl
-    cd {{ .workDir }}
-    cfssl gencert -ca=myca.pem -ca-key=myca-key.pem -config=ca-config.json -profile=client -hostname={{ .listOfHosts }} clientRequest.json | cfssljson -bare {{ .certName }}
-   
-  `, map[string]string{
-		"workDir":     cfssltool.WorkingDir,
-		"certName":    certName,
-		"listOfHosts": strings.Join(listOfHosts, ","),
-	})
-
-	shellkit.ExecuteShell(cmd)
+	cfssltool.CreateCert("client", cn, listOfHosts, certName, 4096)
 }
 
+//keysize default to 4096
 func (cfssltool *CFSSLTool) CreateServerCert(cn string, listOfHosts []string, certName string) {
-	doc := quote.HereDoc(`
-      {
-         "CN": "{{ .cn }}",
-         "hosts": [ {{ .listOfHosts }} ],
-         "key": {
-            "algo": "rsa",
-            "size": {{ .keySize }}
-         }
-      }
-    `)
+	cfssltool.CreateCert("server", cn, listOfHosts, certName, 4096)
+}
 
+func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []string, certName string, keySize int) {
 	list := []string{}
 	for _, host := range listOfHosts {
 		list = append(list, fmt.Sprintf(`"%s"`, host))
 	}
-	content := quote.Template(doc, map[string]string{
+
+	content := quote.Template(quote.HereDoc(`
+		{
+			"CN": "{{ .cn }}",
+			"hosts": [ {{ .listOfHosts }} ],
+			"key": {
+				"algo": "rsa",
+				"size": {{ .keySize }}
+		}
+	`), map[string]string{
 		"cn":          cn,
-		"keySize":     "4096",
+		"keySize":     fmt.Sprintf("%d", keySize),
 		"listOfHosts": strings.Join(list, ","),
 	})
 
 	//create server key
-	err := ioutil.WriteFile(cfssltool.WorkingDir+"/serverRequest.json", []byte(content), 0644)
+	file := fmt.Sprintf("%s/%s_request.json", cfssltool.WorkingDir, cn)
+	err := os.WriteFile(file, []byte(content), 0644)
 	if err != nil {
-		log.Fatalf("Failed to save server cert request:%v", err)
+		log.Fatalf("Failed to save cert request:%v", err)
 	}
 
 	cmd := quote.CmdTemplate(`
     // set PATH=%PATH%;c:\Tools\cfssl
     cd {{ .workDir }}
-    cfssl gencert -ca=myca.pem -ca-key=myca-key.pem -config=ca-config.json -profile=server -hostname={{ .listOfHosts }} serverRequest.json | cfssljson -bare {{ .certName }} 
+    cfssl gencert -ca=myca.pem -ca-key=myca-key.pem -config=ca-config.json -profile={{ .profile }} -hostname={{ .listOfHosts }} {{ .file }} | cfssljson -bare {{ .certName }} 
   `, map[string]string{
+		"file":        file,
+		"profile":     profile, //server or client
 		"workDir":     cfssltool.WorkingDir,
 		"certName":    certName,
 		"listOfHosts": strings.Join(listOfHosts, ","), //without "
