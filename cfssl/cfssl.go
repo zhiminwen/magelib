@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/zhiminwen/magetool/shellkit"
@@ -132,7 +133,6 @@ func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []
 		"listOfHosts": strings.Join(list, ","),
 	})
 
-	//create server key
 	file := fmt.Sprintf("%s/%s_request.json", cfssltool.WorkingDir, cn)
 	err := os.WriteFile(file, []byte(content), 0644)
 	if err != nil {
@@ -144,7 +144,7 @@ func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []
     cd {{ .workDir }}
     cfssl gencert -ca=myca.pem -ca-key=myca-key.pem -config=ca-config.json -profile={{ .profile }} -hostname={{ .listOfHosts }} {{ .file }} | cfssljson -bare {{ .certName }} 
   `, map[string]string{
-		"file":        file,
+		"file":        filepath.Base(file),
 		"profile":     profile, //server or client
 		"workDir":     cfssltool.WorkingDir,
 		"certName":    certName,
