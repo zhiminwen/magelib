@@ -126,6 +126,7 @@ func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []
 			"key": {
 				"algo": "rsa",
 				"size": {{ .keySize }}
+			}
 		}
 	`), map[string]string{
 		"cn":          cn,
