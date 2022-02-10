@@ -44,6 +44,7 @@ func cmd_createImage(vm VMSpec) string {
 		"sourceImage": vm.SourceImageFile,
 		"poolPath":    vm.PoolPath,
 		"vmName":      vm.Name,
+		"diskSize":    fmt.Sprintf("%d", vm.Disk),
 	})
 
 	return cmd
