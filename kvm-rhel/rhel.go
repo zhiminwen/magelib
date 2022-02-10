@@ -55,7 +55,7 @@ func cloudInit(vm VMSpec) string {
 	content := quote.Template(quote.HereDoc(`
     #cloud-config
     hostname: {{ .vmName }}
-    fqdn: {{ .vm}}
+    fqdn: {{ .vmName }}
     manage_etc_hosts: false
     users:
       - name: rhel
