@@ -55,7 +55,8 @@ func cloudInit(vm VMSpec) string {
 	content := quote.Template(quote.HereDoc(`
     #cloud-config
     hostname: {{ .vmName }}
-    manage_etc_hosts: true
+    fqdn: {{ .vm}}
+    manage_etc_hosts: false
     users:
       - name: rhel
         sudo: ALL=(ALL) NOPASSWD:ALL
@@ -70,14 +71,8 @@ func cloudInit(vm VMSpec) string {
     chpasswd:
       list: |
         root: {{ .password }}
-        rhel: {{ .passwor }}
+        rhel: {{ .password }}
       expire: False
-
-    #runcmd:
-    #		- [ sh, -c, 'sed -i s/BOOTPROTO=dhcp/BOOTPROTO=static/ /etc/sysconfig/network-scripts/ifcfg-eth0' ]
-    #		- [ sh, -c, 'ifdown eth0 && sleep 1 && ifup eth0 && sleep 1 && ip a' ]
-    
-    
   `), map[string]string{
 		"vmName":       vm.Name,
 		"sshPublicKey": vm.SshPublicKey,
