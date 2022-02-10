@@ -48,7 +48,7 @@ func cmd_createImage(vm VMSpec) string {
 	return cmd
 }
 
-func cloundInit(vm VMSpec) string {
+func cloudInit(vm VMSpec) string {
 	content := quote.Template(quote.HereDoc(`
     #cloud-config
     hostname: {{ .vmName }}
@@ -110,7 +110,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec, workingDir string) err
 		return err
 	}
 
-	content := cloundInit(vm)
+	content := cloudInit(vm)
 	err = sshClient.Put(content, workingDir+"/"+vm.Name+".cloud-init.yaml")
 	if err != nil {
 		return err
