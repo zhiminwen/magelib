@@ -2,6 +2,7 @@ package kvmrhel
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/zhiminwen/magetool/sshkit"
 	"github.com/zhiminwen/quote"
@@ -96,7 +97,7 @@ func networkCfg(vm VMSpec) string {
   `), map[string]string{
 		"ipCidr":     vm.IpCIDR,
 		"gw":         vm.Gateway,
-		"dnsServers": quote.Join(vm.NameServers, ","),
+		"dnsServers": strings.Join(vm.NameServers, ","),
 	})
 	return content
 }
