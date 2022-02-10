@@ -39,7 +39,8 @@ func fill_default(vm VMSpec) VMSpec {
 
 func cmd_createImage(vm VMSpec) string {
 	cmd := quote.CmdTemplate(`
-    qemu-img create -b {{ .sourceImage }} -f qcow2 {{ .poolPath }}/{{ .vmName }}.qcow2 {{ .diskSize }}G
+    //need to define back file format also
+    qemu-img create -b {{ .sourceImage }} -F qcow2 -f qcow2 {{ .poolPath }}/{{ .vmName }}.qcow2 {{ .diskSize }}G
   `, map[string]string{
 		"sourceImage": vm.SourceImageFile,
 		"poolPath":    vm.PoolPath,
@@ -128,7 +129,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec, workingDir string) err
     cd {{ .dir }}
     cloud-localds -v --network-config={{ .vmName }}.network.yaml {{ .vmName }}-seed.qcow2 {{ .vmName }}.cloud-init.yaml
     
-    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --graphics=vnc --network network={{ .network }},model=virtio --boot hd
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd 
   `, map[string]string{
 		"dir":      workingDir,
 		"vmName":   vm.Name,
