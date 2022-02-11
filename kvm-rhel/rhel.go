@@ -26,12 +26,17 @@ type VMSpec struct {
 	IpCIDR      string //ip/24
 	Gateway     string
 	NameServers []string
+
+	WorkingDir string
 }
 
 func fill_default(vm VMSpec) VMSpec {
 	vmNew := vm
 	if vmNew.Password == "" {
 		vmNew.Password = "password"
+	}
+	if vmNew.WorkingDir == "" {
+		vmNew.WorkingDir = "/tmp"
 	}
 
 	return vmNew
@@ -99,7 +104,7 @@ func networkCfg(vm VMSpec) string {
 	return content
 }
 
-func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec, workingDir string) error {
+func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	vm = fill_default(vm)
 
 	cmd := cmd_createImage(vm)
@@ -109,13 +114,13 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec, workingDir string) err
 	}
 
 	content := cloudInit(vm)
-	err = sshClient.Put(content, workingDir+"/"+vm.Name+".cloud-init.yaml")
+	err = sshClient.Put(content, vm.WorkingDir+"/"+vm.Name+".cloud-init.yaml")
 	if err != nil {
 		return err
 	}
 
 	content = networkCfg(vm)
-	err = sshClient.Put(content, workingDir+"/"+vm.Name+".network.yaml")
+	err = sshClient.Put(content, vm.WorkingDir+"/"+vm.Name+".network.yaml")
 	if err != nil {
 		return err
 	}
@@ -126,7 +131,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec, workingDir string) err
     
     virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd 
   `, map[string]string{
-		"dir":      workingDir,
+		"dir":      vm.WorkingDir,
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
 		"cpu":      fmt.Sprintf("%d", vm.Cpu),
@@ -136,6 +141,22 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec, workingDir string) err
 		"network":  vm.Network,
 	})
 	err = sshClient.Execute(cmd)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func Eject_CloudInit_CD(sshClient *sshkit.SSHClient, vm VMSpec) error {
+	cmd := quote.CmdTemplate(`
+    cd {{ .dir }}
+    virsh detach-disk {{ .vmName }} {{ .vmName }}-seed.qcow2 --persistent --live
+  `, map[string]string{
+		"dir":    vm.WorkingDir,
+		"vmName": vm.Name,
+	})
+	err := sshClient.Execute(cmd)
 	if err != nil {
 		return err
 	}
