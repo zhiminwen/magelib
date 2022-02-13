@@ -201,7 +201,7 @@ func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	}
 	cmd := quote.CmdTemplate(`
     // virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
-    qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}G
+    qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}
     virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd,cdrom {{ .cdOption}}
   `, map[string]string{
 		"vmName":   vm.Name,
