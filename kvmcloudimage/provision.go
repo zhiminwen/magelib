@@ -29,6 +29,9 @@ type VMSpec struct {
 	NameServers []string
 
 	WorkingDir string //where to create the cloudinit iso image
+
+	//for create vm with virt-install with iso
+	IsoFile string //where to store the iso image
 }
 
 func fill_default(vm VMSpec) VMSpec {
@@ -182,4 +185,29 @@ func Delete_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		return err
 	}
 	return nil
+}
+
+//create VM with virt-install
+func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
+	var cdOption string
+	if vm.IsoFile == "" {
+		cdOption = "--disk device=cdrom"
+	} else {
+		cdOption = "--cdrom " + vm.IsoFile
+	}
+	cmd := quote.CmdTemplate(`
+    virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd,cdrom {{ .cdOption}}
+  `, map[string]string{
+		"vmName":   vm.Name,
+		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
+		"cpu":      fmt.Sprintf("%d", vm.Cpu),
+		"diskSize": fmt.Sprintf("%dG", vm.Disk),
+		"pool":     vm.Pool,
+		"path":     vm.PoolPath,
+		"network":  vm.Network,
+		"cdOption": cdOption,
+	})
+
+	return sshClient.Execute(cmd)
 }
