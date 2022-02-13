@@ -70,11 +70,15 @@ func cloudInit(vm VMSpec) string {
         root:{{ .password }}
         {{ .user }}:{{ .password }}
       expire: false
+    runcmd:
+      - [ echo {{ .ip }} {{ .hostname }} | tee -a /etc/hosts]
   `), map[string]interface{}{
 		"vmName":   vm.Name,
 		"user":     vm.BaseUser,
 		"pubKeys":  vm.SshPublicKeys,
 		"password": vm.Password,
+		"ip":       strings.Split(vm.IpCIDR, "/")[0],
+		"hostname": vm.Name,
 	})
 	return content
 }
@@ -174,8 +178,8 @@ func Eject_CloudInit_CD(sshClient *sshkit.SSHClient, vm VMSpec) error {
 func Delete_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	cmd := quote.CmdTemplate(`
     virsh destroy {{ .vmName }} || echo ignore not running
-		virsh undefine {{ .vmName }} 
-		rm -rf {{ .poolPath }}/{{ .vmName }}.qcow2
+    virsh undefine {{ .vmName }} 
+    rm -rf {{ .poolPath }}/{{ .vmName }}.qcow2
   `, map[string]string{
 		"vmName":   vm.Name,
 		"poolPath": vm.PoolPath,
