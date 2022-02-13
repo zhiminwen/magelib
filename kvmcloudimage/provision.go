@@ -164,6 +164,9 @@ func Eject_CloudInit_CD(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	cmd := quote.CmdTemplate(`
     cd {{ .dir }}
     virsh change-media {{ .vmName }} --path $(readlink -f {{ .vmName }}-seed.qcow2) --eject --force
+
+		//remove seed disk
+		rm -rf {{ .vmName }}-seed.qcow2 
   `, map[string]string{
 		"dir":    vm.WorkingDir,
 		"vmName": vm.Name,
