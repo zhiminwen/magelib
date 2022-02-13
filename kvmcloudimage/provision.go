@@ -51,7 +51,7 @@ func cloudInit(vm VMSpec) string {
     #cloud-config
     hostname: {{ .vmName }}
     fqdn: {{ .vmName }}
-    manage_etc_hosts: false
+    manage_etc_hosts: localhost
 
     ssh_pwauth: true
     disable_root: false
