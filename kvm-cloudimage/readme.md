@@ -1,5 +1,5 @@
 This will replace the uvt-kvm way of creating KVM vm
- 
+
 ## Sample usage
 ```
 func get_redhat_vm_spec() kvmcloudimage.VMSpec {
@@ -14,7 +14,7 @@ func get_redhat_vm_spec() kvmcloudimage.VMSpec {
 		Mem:  8,
 		Disk: 100,
 
-		BaseUser: "rehl",
+		BaseUser: "rhel",
 		SshPublicKeys: []string{
 			string(pubKey),
 		},
