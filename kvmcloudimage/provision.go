@@ -71,7 +71,7 @@ func cloudInit(vm VMSpec) string {
         {{ .user }}:{{ .password }}
       expire: false
     runcmd:
-      - [ echo {{ .ip }} {{ .hostname }} | tee -a /etc/hosts]
+      - [ sh, -c, echo {{ .ip }} {{ .hostname }} | tee -a /etc/hosts]
   `), map[string]interface{}{
 		"vmName":   vm.Name,
 		"user":     vm.BaseUser,
