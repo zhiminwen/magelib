@@ -1,4 +1,4 @@
-module kvmcloudimage
+module github.com/zhiminwen/magelib/kvmcloudimage
 
 go 1.17
 
