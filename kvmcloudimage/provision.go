@@ -203,7 +203,6 @@ func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
 		"cpu":      fmt.Sprintf("%d", vm.Cpu),
 		"diskSize": fmt.Sprintf("%dG", vm.Disk),
-		"pool":     vm.Pool,
 		"path":     vm.PoolPath,
 		"network":  vm.Network,
 		"cdOption": cdOption,
