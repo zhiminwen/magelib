@@ -21,27 +21,36 @@ func NewCFSSLTool(workDir string) (*CFSSLTool, error) {
 	doc := quote.HereDoc(`
     {
       "signing": {
-          "default": {
-              "expiry": "43800h"
+        "default": {
+            "expiry": "43800h"
+        },
+        "profiles": {
+          "server": {
+            "expiry": "43800h",
+            "usages": [
+              "signing",
+              "key encipherment",
+              "server auth",
+              "client auth"
+            ]
           },
-          "profiles": {
-              "server": {
-                  "expiry": "43800h",
-                  "usages": [
-                      "signing",
-                      "key encipherment",
-                      "server auth",
-                      "client auth"
-                  ]
-              },
-              "client": {
-                  "expiry": "43800h",
-                  "usages": [
-                      "signing",
-                      "key encipherment",
-                      "client auth"
-                  ]
-              }
+          "client": {
+              "expiry": "43800h",
+              "usages": [
+                "signing",
+                "key encipherment",
+                "client auth"
+              ]
+          },
+          "intermediate": {
+            "usages": ["cert sign", "crl sign"],
+            "expiry": "43800h",
+            "ca_constraint": {
+              "is_ca": true,
+              "max_path_len": 0, #no child ca
+              "max_path_len_zero": true
+            }
+          }
           }
       }
     }
@@ -66,18 +75,18 @@ func NewCFSSLTool(workDir string) (*CFSSLTool, error) {
 func (cfssltool *CFSSLTool) CreateSelfSignedCA(cn string, listOfHosts []string) {
 	doc := quote.HereDoc(`
       {
-         "CN": "{{ .cn }}",
-         "hosts": [ {{ .listOfHosts }} ],
-         "key": {
-            "algo": "rsa",
-            "size": {{ .keySize }}
-         },
-         "names": [
-            {
-                "C": "SG",
-                "ST": "SG",
-                "L": "Singapore"
-            }
+        "CN": "{{ .cn }}",
+        "hosts": [ {{ .listOfHosts }} ],
+        "key": {
+          "algo": "rsa",
+          "size": {{ .keySize }}
+        },
+        "names": [
+          {
+            "C": "SG",
+            "ST": "SG",
+            "L": "Singapore"
+          }
         ]
       }
     `)
@@ -95,9 +104,9 @@ func (cfssltool *CFSSLTool) CreateSelfSignedCA(cn string, listOfHosts []string) 
 	ioutil.WriteFile(cfssltool.WorkingDir+"/myca.json", []byte(content), 0644)
 
 	cmd := quote.CmdTemplate(`
-		cd {{ .dir }}
-		cfssl gencert -initca myca.json | cfssljson -bare myca
-	`, map[string]string{
+    cd {{ .dir }}
+    cfssl gencert -initca myca.json | cfssljson -bare myca
+  `, map[string]string{
 		"dir": cfssltool.WorkingDir,
 	})
 	shellkit.ExecuteShell(cmd)
@@ -120,15 +129,15 @@ func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []
 	}
 
 	content := quote.Template(quote.HereDoc(`
-		{
-			"CN": "{{ .cn }}",
-			"hosts": [ {{ .listOfHosts }} ],
-			"key": {
-				"algo": "rsa",
-				"size": {{ .keySize }}
-			}
-		}
-	`), map[string]string{
+    {
+      "CN": "{{ .cn }}",
+      "hosts": [ {{ .listOfHosts }} ],
+      "key": {
+        "algo": "rsa",
+        "size": {{ .keySize }}
+      }
+    }
+  `), map[string]string{
 		"cn":          cn,
 		"keySize":     fmt.Sprintf("%d", keySize),
 		"listOfHosts": strings.Join(list, ","),
