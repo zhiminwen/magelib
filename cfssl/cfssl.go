@@ -47,7 +47,7 @@ func NewCFSSLTool(workDir string) (*CFSSLTool, error) {
             "expiry": "43800h",
             "ca_constraint": {
               "is_ca": true,
-              "max_path_len": 0, #no child ca
+              "max_path_len": 0,
               "max_path_len_zero": true
             }
           }
