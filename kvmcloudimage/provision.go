@@ -28,6 +28,8 @@ type VMSpec struct {
 	Gateway     string
 	NameServers []string
 
+	OsInfo string
+
 	WorkingDir string //where to create the cloudinit iso image
 
 	//for create vm with virt-install with iso
@@ -41,6 +43,10 @@ func fill_default(vm VMSpec) VMSpec {
 	}
 	if vmNew.WorkingDir == "" {
 		vmNew.WorkingDir = "/tmp"
+	}
+
+	if vmNew.OsInfo == "" {
+		vm.OsInfo = "linux2020"
 	}
 
 	return vmNew
@@ -141,7 +147,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
     cd {{ .dir }}
     cloud-localds -v --network-config={{ .vmName }}.network.yaml {{ .vmName }}-seed.qcow2 {{ .vmName }}.cloud-init.yaml
     
-    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd 
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd --osinfo {{ .osInfo }}
   `, map[string]string{
 		"dir":      vm.WorkingDir,
 		"vmName":   vm.Name,
@@ -150,6 +156,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		"diskSize": fmt.Sprintf("%dG", vm.Disk),
 		"path":     vm.PoolPath,
 		"network":  vm.Network,
+		"osInfo":   vm.OsInfo,
 	})
 	err = sshClient.Execute(cmd)
 	if err != nil {
