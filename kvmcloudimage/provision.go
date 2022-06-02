@@ -216,6 +216,7 @@ func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	} else {
 		osInfo = "--osinfo " + vm.OsInfo
 	}
+
 	cmd := quote.CmdTemplate(`
 		// virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
 		qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}
