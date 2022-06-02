@@ -203,17 +203,24 @@ func Delete_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 
 //create VM with virt-install
 func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
-	var cdOption string
+	var cdOption, osInfo string
+
 	if vm.IsoFile == "" {
 		cdOption = "--disk device=cdrom"
 	} else {
 		cdOption = "--cdrom " + vm.IsoFile
 	}
+
+	if vm.OsInfo == "" {
+		osInfo = ""
+	} else {
+		osInfo = "--osinfo " + vm.OsInfo
+	}
 	cmd := quote.CmdTemplate(`
-    // virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
-    qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}
-    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd,cdrom {{ .cdOption}} --osinfo {{ .osInfo }}
-  `, map[string]string{
+		// virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
+		qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}
+		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd,cdrom {{ .cdOption}} {{ .osInfo }}
+`, map[string]string{
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
 		"cpu":      fmt.Sprintf("%d", vm.Cpu),
@@ -221,7 +228,7 @@ func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		"path":     vm.PoolPath,
 		"network":  vm.Network,
 		"cdOption": cdOption,
-		"osInfo":   vm.OsInfo,
+		"osInfo":   osInfo,
 	})
 
 	return sshClient.Execute(cmd)
