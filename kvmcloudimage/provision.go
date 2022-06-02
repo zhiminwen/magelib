@@ -143,11 +143,18 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		return err
 	}
 
+	var osInfo string
+	if strings.TrimSpace(vm.OsInfo) == "" {
+		osInfo = ""
+	} else {
+		osInfo = "--osinfo " + vm.OsInfo
+	}
+
 	cmd = quote.CmdTemplate(`
     cd {{ .dir }}
     cloud-localds -v --network-config={{ .vmName }}.network.yaml {{ .vmName }}-seed.qcow2 {{ .vmName }}.cloud-init.yaml
     
-    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd --osinfo {{ .osInfo }}
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd {{ .osInfo }}
   `, map[string]string{
 		"dir":      vm.WorkingDir,
 		"vmName":   vm.Name,
@@ -156,7 +163,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		"diskSize": fmt.Sprintf("%dG", vm.Disk),
 		"path":     vm.PoolPath,
 		"network":  vm.Network,
-		"osInfo":   vm.OsInfo,
+		"osInfo":   osInfo,
 	})
 	err = sshClient.Execute(cmd)
 	if err != nil {
@@ -211,7 +218,7 @@ func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 		cdOption = "--cdrom " + vm.IsoFile
 	}
 
-	if vm.OsInfo == "" {
+	if strings.TrimSpace(vm.OsInfo) == "" {
 		osInfo = ""
 	} else {
 		osInfo = "--osinfo " + vm.OsInfo
