@@ -80,7 +80,7 @@ func cloudInit(vm VMSpec) string {
       expire: false
     runcmd:
       - [ sh, -c, echo {{ .ip }} {{ .hostname }} | tee -a /etc/hosts]
-      {{ for _, $cmd := range .runCmds }}
+      {{ range $i, $cmd := .runCmds }}
       - [ sh, -c, {{ $cmd }} ]
       {{ end }}
   `), map[string]interface{}{
