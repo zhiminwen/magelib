@@ -30,6 +30,8 @@ type VMSpec struct {
 
 	OsInfo string
 
+	RunCmds []string
+
 	WorkingDir string //where to create the cloudinit iso image
 
 	//for create vm with virt-install with iso
@@ -78,6 +80,9 @@ func cloudInit(vm VMSpec) string {
       expire: false
     runcmd:
       - [ sh, -c, echo {{ .ip }} {{ .hostname }} | tee -a /etc/hosts]
+			{{ for _, $cmd := range .runCmds }}
+			- [ sh, -c, {{ $cmd }} ]
+			{{ end }}
   `), map[string]interface{}{
 		"vmName":   vm.Name,
 		"user":     vm.BaseUser,
@@ -85,6 +90,7 @@ func cloudInit(vm VMSpec) string {
 		"password": vm.Password,
 		"ip":       strings.Split(vm.IpCIDR, "/")[0],
 		"hostname": vm.Name,
+		"runCmds":  vm.RunCmds,
 	})
 	return content
 }
