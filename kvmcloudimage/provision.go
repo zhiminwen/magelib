@@ -80,9 +80,9 @@ func cloudInit(vm VMSpec) string {
       expire: false
     runcmd:
       - [ sh, -c, echo {{ .ip }} {{ .hostname }} | tee -a /etc/hosts]
-			{{ for _, $cmd := range .runCmds }}
-			- [ sh, -c, {{ $cmd }} ]
-			{{ end }}
+      {{ for _, $cmd := range .runCmds }}
+      - [ sh, -c, {{ $cmd }} ]
+      {{ end }}
   `), map[string]interface{}{
 		"vmName":   vm.Name,
 		"user":     vm.BaseUser,
@@ -185,8 +185,8 @@ func Eject_CloudInit_CD(sshClient *sshkit.SSHClient, vm VMSpec) error {
     cd {{ .dir }}
     virsh change-media {{ .vmName }} --path $(readlink -f {{ .vmName }}-seed.qcow2) --eject --force
 
-		//remove seed disk
-		rm -rf {{ .vmName }}-seed.qcow2 
+    //remove seed disk
+    rm -rf {{ .vmName }}-seed.qcow2 
   `, map[string]string{
 		"dir":    vm.WorkingDir,
 		"vmName": vm.Name,
@@ -231,9 +231,9 @@ func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	}
 
 	cmd := quote.CmdTemplate(`
-		// virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
-		qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}
-		virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd,cdrom {{ .cdOption}} {{ .osInfo }}
+    // virsh vol-create-as {{ .pool }} {{ .vmName }}.qcow2 {{.diskSize}}
+    qemu-img create -f qcow2 {{ .path }}/{{ .vmName }}.qcow2 {{ .diskSize }}
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd,cdrom {{ .cdOption}} {{ .osInfo }}
 `, map[string]string{
 		"vmName":   vm.Name,
 		"mem":      fmt.Sprintf("%d", vm.Mem*1024),
