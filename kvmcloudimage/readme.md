@@ -1,7 +1,7 @@
 This will replace the uvt-kvm way of creating KVM vm
 
 ## Sample usage
-```
+```go
 func get_redhat_vm_spec() kvmcloudimage.VMSpec {
 	pubKey, err := os.ReadFile(".ssh/id_rsa.pub")
 	if err != nil {
