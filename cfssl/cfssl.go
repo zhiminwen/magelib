@@ -2,13 +2,12 @@ package cfssl
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/zhiminwen/magetool/shellkit"
+	"github.com/magefile/mage/sh"
 	"github.com/zhiminwen/quote"
 )
 
@@ -61,7 +60,7 @@ func NewCFSSLTool(workDir string) (*CFSSLTool, error) {
 		return nil, err
 	}
 
-	err = ioutil.WriteFile(workDir+"/ca-config.json", []byte(doc), 0644)
+	err = os.WriteFile(workDir+"/ca-config.json", []byte(doc), 0644)
 	if err != nil {
 		log.Printf("Failed to create ca config file:%v", err)
 		return nil, err
@@ -101,7 +100,7 @@ func (cfssltool *CFSSLTool) CreateSelfSignedCA(cn string, listOfHosts []string) 
 		"listOfHosts": strings.Join(list, ","),
 	})
 
-	ioutil.WriteFile(cfssltool.WorkingDir+"/myca.json", []byte(content), 0644)
+	os.WriteFile(cfssltool.WorkingDir+"/myca.json", []byte(content), 0644)
 
 	cmd := quote.CmdTemplate(`
     cd {{ .dir }}
@@ -109,15 +108,15 @@ func (cfssltool *CFSSLTool) CreateSelfSignedCA(cn string, listOfHosts []string) 
   `, map[string]string{
 		"dir": cfssltool.WorkingDir,
 	})
-	shellkit.ExecuteShell(cmd)
+	sh.RunV("bash", "-c", cmd)
 }
 
-//keysize default to 4096
+// keysize default to 4096
 func (cfssltool *CFSSLTool) CreateClientCert(cn string, listOfHosts []string, certName string) {
 	cfssltool.CreateCert("client", cn, listOfHosts, certName, 4096)
 }
 
-//keysize default to 4096
+// keysize default to 4096
 func (cfssltool *CFSSLTool) CreateServerCert(cn string, listOfHosts []string, certName string) {
 	cfssltool.CreateCert("server", cn, listOfHosts, certName, 4096)
 }
@@ -152,7 +151,7 @@ func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []
 	cmd := quote.CmdTemplate(`
     // set PATH=%PATH%;c:\Tools\cfssl
     cd {{ .workDir }}
-    cfssl gencert -ca=myca.pem -ca-key=myca-key.pem -config=ca-config.json -profile={{ .profile }} -hostname={{ .listOfHosts }} {{ .file }} | cfssljson -bare {{ .certName }} 
+    cfssl gencert -ca=myca.pem -ca-key=myca-key.pem -config=ca-config.json -profile={{ .profile }} -hostname={{ .listOfHosts }} {{ .file }} | cfssljson -bare {{ .certName }}
   `, map[string]string{
 		"file":        filepath.Base(file),
 		"profile":     profile, //server or client
@@ -160,6 +159,5 @@ func (cfssltool *CFSSLTool) CreateCert(profile string, cn string, listOfHosts []
 		"certName":    certName,
 		"listOfHosts": strings.Join(listOfHosts, ","), //without "
 	})
-
-	shellkit.ExecuteShell(cmd)
+	sh.RunV("bash", "-c", cmd)
 }
