@@ -160,7 +160,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
     cd {{ .dir }}
     cloud-localds -v --network-config={{ .vmName }}.network.yaml {{ .vmName }}-seed.qcow2 {{ .vmName }}.cloud-init.yaml
     
-    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd {{ .osInfo }}
+    virt-install --name={{ .vmName }} --ram={{ .mem }} --vcpus={{ .cpu }} --disk path={{ .path }}/{{ .vmName }}.qcow2,bus=virtio,cache=none --disk path={{ .vmName }}-seed.qcow2,device=cdrom --noautoconsole --graphics=vnc --network network={{ .network }},model=virtio --boot hd --import {{ .osInfo }}
   `, map[string]string{
 		"dir":      vm.WorkingDir,
 		"vmName":   vm.Name,
@@ -179,7 +179,7 @@ func Provision_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 
 }
 
-//Eject only when the cloudinit boot is finished
+// Eject only when the cloudinit boot is finished
 func Eject_CloudInit_CD(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	cmd := quote.CmdTemplate(`
     cd {{ .dir }}
@@ -214,7 +214,7 @@ func Delete_VM(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	return nil
 }
 
-//create VM with virt-install
+// create VM with virt-install
 func Create_VM_with_Virt_Install(sshClient *sshkit.SSHClient, vm VMSpec) error {
 	var cdOption, osInfo string
 
