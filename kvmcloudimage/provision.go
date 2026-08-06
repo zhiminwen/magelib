@@ -97,15 +97,17 @@ func cloudInit(vm VMSpec) string {
 
 func networkCfg(vm VMSpec) string {
 	content := quote.Template(quote.HereDoc(`
-    version: 2
-    ethernets:
-      {{ .nicName }}:
-        dhcp4: false
-        addresses: [ {{ .ipCidr }} ]
-        gateway4: {{ .gw }}
-        nameservers:
-          addresses: [ {{ .dnsServers }} ]
-  `), map[string]string{
+	   version: 2
+	   ethernets:
+	     {{ .nicName }}:
+	       dhcp4: false
+	       addresses: [ {{ .ipCidr }} ]
+	       routes:
+	         - to: default
+	           via: {{ .gw }}
+	       nameservers:
+	         addresses: [ {{ .dnsServers }} ]
+	 `), map[string]string{
 		"ipCidr":     vm.IpCIDR,
 		"gw":         vm.Gateway,
 		"dnsServers": strings.Join(vm.NameServers, ","),
