@@ -103,7 +103,7 @@ func networkCfg(vm VMSpec) string {
 	       dhcp4: false
 	       addresses: [ {{ .ipCidr }} ]
 	       routes:
-	         - to: default
+	         - to: 0.0.0.0/0
 	           via: {{ .gw }}
 	       nameservers:
 	         addresses: [ {{ .dnsServers }} ]
